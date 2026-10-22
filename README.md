@@ -52,6 +52,19 @@ real_data/
 3. Run: `python train_v3.py`
 4. Evaluate: `python evaluate_model.py`
 
+## Dataset
+
+This project uses the public **OC-MSI (Oral Cancer Multispectral Imaging) dataset** from Kaggle:
+https://www.kaggle.com/datasets/zoya77/oral-cancer-multispectral-imaging-dataset-oc-msi/data
+
+The dataset is **not included** in this repository (medical images, size and licensing).
+The trained model (``oral_cancer_model_v3.keras``) is included, so the web app runs without it.
+Please follow the dataset's licence and citation requirements on the Kaggle page.
+
+### Retrain the model (optional)
+1. Download the dataset from the Kaggle link above.
+2. Place the images in the folders provided:
+
 ## Author
 
 Kunal Hembade
