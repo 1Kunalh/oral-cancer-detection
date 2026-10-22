@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Oral Cancer Detection — AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #6d28d9 100%);
+      min-height: 100vh; margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: flex-start;
+    }
+    .container {
+      background: white; border-radius: 16px; max-width: 950px;
+      width: 100%; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-top: 20px;
+    }
+    h1 { color: #1e3a8a; margin: 0 0 8px; text-align: center; font-size: 28px; }
+    .subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; font-size: 14px; }
+    .patient-form {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 22px;
+      padding: 18px; background: #f9fafb; border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+    .patient-form label {
+      font-size: 12px; color: #4b5563; font-weight: 600;
+      display: block; margin-bottom: 5px;
+    }
+    .patient-form input, .patient-form select {
+      width: 100%; padding: 10px; border: 1px solid #d1d5db;
+      border-radius: 8px; font-size: 14px;
+    }
+    .upload-box {
+      border: 3px dashed #93c5fd; border-radius: 12px;
+      padding: 40px; text-align: center; background: #f0f9ff;
+      transition: 0.2s; margin-bottom: 20px;
+    }
+    .upload-box:hover { background: #e0f2fe; border-color: #3b82f6; }
+    input[type="file"] { display: none; }
+    .file-label {
+      display: inline-block; padding: 12px 28px; background: #3b82f6;
+      color: white; border-radius: 8px; cursor: pointer;
+      font-weight: 600; transition: 0.2s;
+    }
+    .file-label:hover { background: #2563eb; }
+    .file-name { margin-top: 12px; color: #6b7280; font-size: 13px; }
+    button[type="submit"] {
+      width: 100%; padding: 14px; background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white; border: none; border-radius: 8px;
+      font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 15px;
+    }
+    button[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+    .error { background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+    .result { margin-top: 30px; padding-top: 30px; border-top: 2px solid #e5e7eb; }
+    .verdict {
+      text-align: center; padding: 20px; border-radius: 12px; margin-bottom: 25px;
+    }
+    .verdict.cancer { background: #fee2e2; border: 2px solid #ef4444; }
+    .verdict.non-cancer { background: #d1fae5; border: 2px solid #10b981; }
+    .verdict-label { font-size: 32px; font-weight: 800; margin: 0; }
+    .verdict.cancer .verdict-label { color: #991b1b; }
+    .verdict.non-cancer .verdict-label { color: #065f46; }
+    .verdict-conf { font-size: 15px; color: #4b5563; margin-top: 8px; }
+    .images { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .img-card { text-align: center; }
+    .img-card img {
+      width: 100%; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .img-card h3 { color: #374151; margin: 10px 0 0; font-size: 14px; }
+    .report-btn-wrap { text-align: center; margin-top: 30px; }
+    .report-btn {
+      display: inline-block; padding: 14px 36px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white; text-decoration: none; border-radius: 8px;
+      font-weight: 700; font-size: 15px;
+      box-shadow: 0 6px 20px rgba(16,185,129,0.35);
+      transition: 0.2s;
+    }
+    .report-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.5); }
+    .disclaimer {
+      margin-top: 25px; padding: 15px; background: #fef3c7;
+      border-left: 4px solid #f59e0b; border-radius: 6px;
+      font-size: 12px; color: #78350f;
+    }
+    @media (max-width: 640px) {
+      .patient-form { grid-template-columns: 1fr; }
+      .images { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🦷 Oral Cancer Detection</h1>
+    <p class="subtitle">AI-powered multispectral imaging analysis (EfficientNetB0)</p>
+
+    {% if error %}
+      <div class="error">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+
+      <!-- Patient Info -->
+      <div class="patient-form">
+        <div>
+          <label>Patient Name (optional)</label>
+          <input type="text" name="patient_name" placeholder="e.g. Ramesh Patil">
+        </div>
+        <div>
+          <label>Age</label>
+          <input type="number" name="patient_age" placeholder="e.g. 45">
+        </div>
+        <div>
+          <label>Gender</label>
+          <select name="patient_gender">
+            <option value="">--</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div class="upload-box">
+        <input type="file" id="file" name="file" accept="image/*" required
+               onchange="document.querySelector('.file-name').textContent = this.files[0].name">
+        <label for="file" class="file-label">📁 Image Select Kara</label>
+        <div class="file-name">Kahi file select kela nahi</div>
+      </div>
+
+      <button type="submit">🔬 Analyze Image</button>
+    </form>
+
+    {% if result %}
+    <div class="result">
+      <div class="verdict {{ 'cancer' if result.is_cancer else 'non-cancer' }}">
+        <p class="verdict-label">
+          {{ '⚠️ Cancer Detected' if result.is_cancer else '✅ Non-Cancer' }}
+        </p>
+        <p class="verdict-conf">Confidence: <strong>{{ result.confidence }}%</strong> &nbsp;|&nbsp; Raw prob: {{ result.prob_raw }}</p>
+      </div>
+
+      <div class="images">
+        <div class="img-card">
+          <img src="{{ result.original }}" alt="Original">
+          <h3>Original Image</h3>
+        </div>
+        <div class="img-card">
+          <img src="{{ result.gradcam }}" alt="Grad-CAM">
+          <h3>Grad-CAM (Model Focus)</h3>
+        </div>
+      </div>
+
+      <!-- Report Button -->
+      <div class="report-btn-wrap">
+        <a href="{{ url_for('report') }}" target="_blank" class="report-btn">
+          📄 View Full Medical Report
+        </a>
+      </div>
+
+      <div class="disclaimer">
+        ⚕️ <strong>Disclaimer:</strong> Ha AI model research/demonstration sathi aahe.
+        Clinical diagnosis sathi doctor cha advice gheaa. Model accuracy: 88.4%.
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

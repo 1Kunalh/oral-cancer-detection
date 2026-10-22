@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oral Cancer Screening System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="container">
+        <h1>AI-Based Oral Cancer Screening</h1>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label>Patient ID</label>
+            <input type="text" id="patient_id" name="patient_id" required />
+
+            <label>Select Oral Image</label>
+            <input type="file" id="file" name="file" accept=".png,.jpg,.jpeg" required />
+
+            <button type="submit">Analyze Image</button>
+        </form>
+
+        <div id="resultBox" class="result hidden">
+            <h2>Prediction Result</h2>
+            <p><strong>Prediction:</strong> <span id="prediction"></span></p>
+            <p><strong>Confidence:</strong> <span id="confidence"></span></p>
+
+            <h3>Grad-CAM Heatmap</h3>
+            <img id="heatmapImage" alt="Heatmap" />
+
+            <div class="review-panel">
+                <label>Doctor Review</label>
+                <select id="review_status">
+                    <option value="Approved">Approved</option>
+                    <option value="Needs Follow-up">Needs Follow-up</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+
+                <label>Doctor Notes</label>
+                <textarea id="doctor_notes" rows="4"></textarea>
+
+                <button id="submitReview">Submit Review</button>
+            </div>
+
+            <a id="downloadReport" class="report-btn hidden" href="#">Download PDF Report</a>
+        </div>
+
+        <div class="cases-section">
+            <h2>Previous Cases</h2>
+            <ul id="caseList"></ul>
+        </div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById("uploadForm");
+        const resultBox = document.getElementById("resultBox");
+        const predictionEl = document.getElementById("prediction");
+        const confidenceEl = document.getElementById("confidence");
+        const heatmapImage = document.getElementById("heatmapImage");
+        const caseList = document.getElementById("caseList");
+        const reviewStatusEl = document.getElementById("review_status");
+        const doctorNotesEl = document.getElementById("doctor_notes");
+        const downloadReport = document.getElementById("downloadReport");
+        let currentCaseId = null;
+
+        uploadForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await res.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            currentCaseId = data.case_id;
+            predictionEl.textContent = data.prediction;
+            confidenceEl.textContent = `${data.confidence * 100}%`;
+            heatmapImage.src = `data:image/png;base64,${data.heatmap}`;
+
+            resultBox.classList.remove("hidden");
+            downloadReport.href = `/api/report/${data.case_id}`;
+            downloadReport.classList.remove("hidden");
+
+            loadCases();
+        });
+
+        document.getElementById("submitReview").addEventListener("click", async () => {
+            if (!currentCaseId) {
+                alert("No case selected");
+                return;
+            }
+
+            await fetch(`/api/review/${currentCaseId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    review_status: reviewStatusEl.value,
+                    doctor_notes: doctorNotesEl.value
+                })
+            });
+
+            alert("Review submitted successfully");
+            loadCases();
+        });
+
+        async function loadCases() {
+            const res = await fetch("/api/cases");
+            const cases = await res.json();
+
+            caseList.innerHTML = "";
+            cases.forEach(c => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <strong>${c.case_id}</strong> — ${c.prediction} (${c.confidence})  
+                    <span>Review: ${c.review_status}</span>
+                `;
+                caseList.appendChild(li);
+            });
+        }
+
+        loadCases();
+    </script>
+</body>
+</html>

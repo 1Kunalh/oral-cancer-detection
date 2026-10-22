@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medical Report — {{ data.report_id }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #f3f4f6; padding: 20px; color: #111827;
+    }
+    .report-container {
+      max-width: 850px; margin: 0 auto; background: white;
+      padding: 45px 55px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      border-top: 6px solid #1e3a8a;
+    }
+    .header {
+      text-align: center; border-bottom: 2px solid #1e3a8a;
+      padding-bottom: 18px; margin-bottom: 25px;
+    }
+    .header h1 { font-size: 24px; color: #1e3a8a; letter-spacing: 1px; }
+    .header h2 { font-size: 13px; color: #6b7280; font-weight: normal; margin-top: 5px; }
+    .hospital-info { font-size: 11px; color: #6b7280; margin-top: 8px; line-height: 1.5; }
+
+    .meta-row {
+      display: flex; justify-content: space-between;
+      font-size: 12px; margin-bottom: 20px;
+      padding: 10px 15px; background: #f9fafb;
+      border-left: 4px solid #1e3a8a;
+    }
+    .meta-row div strong { color: #374151; }
+
+    .section-title {
+      font-size: 13px; font-weight: bold; color: #1e3a8a;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;
+      margin-top: 22px; margin-bottom: 12px;
+    }
+
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px 30px; font-size: 13px;
+    }
+    .info-grid div { display: flex; }
+    .info-grid span:first-child {
+      color: #6b7280; min-width: 110px; font-weight: 600;
+    }
+
+    .findings-images {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; margin: 15px 0;
+    }
+    .findings-images img {
+      width: 100%; border: 1px solid #d1d5db; border-radius: 6px;
+    }
+    .findings-images .caption {
+      text-align: center; font-size: 11px;
+      color: #6b7280; margin-top: 6px; font-style: italic;
+    }
+
+    .result-box {
+      background: #f9fafb; border: 2px solid {{ review.color }};
+      border-radius: 8px; padding: 15px 20px; margin: 15px 0;
+      text-align: center;
+    }
+    .result-box .label {
+      font-size: 11px; color: #6b7280; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 5px;
+    }
+    .result-box .value {
+      font-size: 26px; font-weight: bold; color: {{ review.color }};
+    }
+    .result-box .conf {
+      font-size: 13px; color: #4b5563; margin-top: 5px;
+    }
+
+    .review-box {
+      background: #fef9f3; border-left: 4px solid {{ review.color }};
+      padding: 15px 20px; margin: 10px 0; border-radius: 4px;
+      font-size: 13px; line-height: 1.7;
+    }
+    .review-box strong { color: {{ review.color }}; }
+
+    .patient-summary {
+      background: #eff6ff; border-left: 4px solid #3b82f6;
+      padding: 15px 20px; margin: 10px 0; border-radius: 4px;
+      font-size: 13px; line-height: 1.7; color: #1e40af;
+    }
+
+    .disclaimer {
+      background: #fef3c7; border: 1px solid #f59e0b;
+      padding: 12px 15px; margin-top: 20px;
+      font-size: 11px; color: #78350f; border-radius: 4px;
+      line-height: 1.6;
+    }
+
+    .signature {
+      margin-top: 40px; display: flex; justify-content: space-between;
+      align-items: flex-end;
+    }
+    .signature .sig-line {
+      border-top: 1px solid #374151; width: 220px;
+      padding-top: 5px; text-align: center;
+      font-size: 12px; color: #374151;
+    }
+    .signature .stamp {
+      font-size: 11px; color: #9ca3af; text-align: right;
+    }
+
+    .footer {
+      text-align: center; font-size: 10px; color: #9ca3af;
+      margin-top: 30px; padding-top: 15px; border-top: 1px dashed #d1d5db;
+    }
+
+    .print-btn {
+      position: fixed; bottom: 20px; right: 20px;
+      padding: 14px 28px; background: #1e3a8a; color: white;
+      border: none; border-radius: 8px; cursor: pointer;
+      font-weight: bold; font-size: 14px;
+      box-shadow: 0 6px 20px rgba(30,58,138,0.4); z-index: 100;
+    }
+    .print-btn:hover { background: #1e40af; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .report-container { box-shadow: none; padding: 30px 40px; }
+      .print-btn { display: none; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Download PDF</button>
+
+  <div class="report-container">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>ORAL CANCER AI SCREENING REPORT</h1>
+      <h2>AI-Assisted Multispectral Imaging Analysis</h2>
+      <div class="hospital-info">
+        Oral Diagnostics & Research Center<br>
+        Powered by EfficientNetB0 Deep Learning Model
+      </div>
+    </div>
+
+    <!-- Meta -->
+    <div class="meta-row">
+      <div><strong>Report ID:</strong> {{ data.report_id }}</div>
+      <div><strong>Date:</strong> {{ data.timestamp }}</div>
+    </div>
+
+    <!-- Patient Info -->
+    <div class="section-title">Patient Information</div>
+    <div class="info-grid">
+      <div><span>Name</span>: {{ data.patient_name }}</div>
+      <div><span>Age</span>: {{ data.patient_age }}</div>
+      <div><span>Gender</span>: {{ data.patient_gender }}</div>
+      <div><span>Patient ID</span>: P-{{ data.report_id[-6:] }}</div>
+    </div>
+
+    <!-- Examination -->
+    <div class="section-title">Examination Details</div>
+    <div class="info-grid">
+      <div><span>Test Performed</span>: AI Oral Cancer Screening</div>
+      <div><span>Modality</span>: Multispectral Imaging</div>
+      <div><span>Algorithm</span>: EfficientNetB0 (CNN)</div>
+      <div><span>Model Accuracy</span>: 88.4% (validated)</div>
+    </div>
+
+    <!-- Findings -->
+    <div class="section-title">Findings</div>
+    <div class="findings-images">
+      <div>
+        <img src="{{ url_for('static', filename='uploads/' + data.original) }}" alt="Original">
+        <div class="caption">Original Oral Image</div>
+      </div>
+      <div>
+        <img src="{{ url_for('static', filename='uploads/' + data.gradcam) }}" alt="Grad-CAM">
+        <div class="caption">AI Attention Heatmap (Grad-CAM)</div>
+      </div>
+    </div>
+
+    <div class="result-box">
+      <div class="label">AI Classification Result</div>
+      <div class="value">
+        {% if data.label == 'cancer' %}SUSPICIOUS FOR MALIGNANCY{% else %}NO MALIGNANCY DETECTED{% endif %}
+      </div>
+      <div class="conf">Confidence: <strong>{{ data.confidence }}%</strong> &nbsp;|&nbsp; Raw Score: {{ data.prob }}</div>
+    </div>
+
+    <!-- Doctor's Review -->
+    <div class="section-title">Doctor's Review &amp; Opinion</div>
+    <div class="review-box">
+      <p><strong>Assessment:</strong> {{ review.assessment }}</p>
+      <p style="margin-top:10px;"><strong>Recommended Action:</strong> {{ review.action }}</p>
+    </div>
+
+    <!-- Patient Friendly Summary -->
+    <div class="section-title">Patient-Friendly Summary</div>
+    <div class="patient-summary">
+      {{ summary }}
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <strong>⚕️ Important Disclaimer:</strong> This report is generated by an AI model
+      (EfficientNetB0, 88.4% accuracy) and is intended for <em>research and screening
+      assistance only</em>. It is <strong>NOT a substitute for professional medical
+      diagnosis</strong>. Please consult a qualified dentist, oral medicine specialist,
+      or oncologist for definitive diagnosis and treatment decisions. AI predictions
+      should always be clinically correlated.
+    </div>
+
+    <!-- Signature -->
+    <div class="signature">
+      <div class="stamp">
+        Reviewed by:<br>
+        <strong>Dr. [Reviewing Physician]</strong><br>
+        <span style="font-size:10px;">Oral Medicine Specialist</span>
+      </div>
+      <div class="sig-line">
+        Authorized Signature
+      </div>
+    </div>
+
+    <div class="footer">
+      This report is system-generated on {{ data.timestamp }} &nbsp;|&nbsp;
+      Report ID: {{ data.report_id }}<br>
+      © 2026 Oral Cancer AI Screening System
+    </div>
+
+  </div>
+
+</body>
+</html>
