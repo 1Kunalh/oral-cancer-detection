@@ -6,14 +6,14 @@ Deep learning (EfficientNetB0) based oral cancer image classification with a Fla
 
 ## Setup and Run
 
-~~~bash
+```bash
 git clone https://github.com/1Kunalh/oral-cancer-detection.git
 cd oral-cancer-detection
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 python app\app.py
-~~~
+```
 
 Open http://127.0.0.1:5000
 
@@ -39,7 +39,7 @@ Please follow the dataset's licence and citation requirements on the Kaggle page
 1. Download the dataset from the Kaggle link above.
 2. Place the images in the folders provided:
 
-~~~
+```
 real_data/
   train/
     cancer/
@@ -47,7 +47,7 @@ real_data/
   val/
     cancer/
     non_cancer/
-~~~
+```
 
 3. Run: `python train_v3.py`
 4. Evaluate: `python evaluate_model.py`
